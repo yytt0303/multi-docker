@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before-install:
+  - docker build -t yytt0303/react-test -f ./client/Dockerfile.dev .
+
+script:
+  - docker run yytt0303/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t yytt0303/multi-client ./client
+  - docker build -t yytt0303/multi-nginx ./nginx
+  - docker build -t yytt0303/multi-server ./server
+  - docker build -t yytt0303/multi-worker ./worker
+
+# Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+# Take those images and push them to docker hub
+  - docker push yytt0303/multi-client
+  - docker push yytt0303/multi-nginx
+  - docker push yytt0303/multi-server
+  - docker push yytt0303/multi-worker
